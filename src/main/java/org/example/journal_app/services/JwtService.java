@@ -21,7 +21,7 @@ import java.util.function.Function;
 public class JwtService {
 
     @Value("${jwt.secret}")
-    private String secret;
+    public static final String SECRET = "da2fb8f513150313aa671126fbb416c094c8eec18cca4e26971404d71dd59d0d";
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -37,7 +37,6 @@ public class JwtService {
     }
 
     private Claims extractAllClaims(String token) {
-
         return Jwts
                 .parser()
                 .verifyWith(getSignKey())
@@ -63,24 +62,29 @@ public class JwtService {
     }
 
     private String createToken(Map<String, Object> claims, String username) {
+
         return Jwts.builder()
-                .setClaims(claims)
-                .setSubject(username)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 2)) // Valid for 2 minutes
-                .signWith(getSignKey()) // Correct signing key
-                .compact();
+                .claims(claims)
+                .subject(username)
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 2))
+                .signWith(getSignKey()).compact();
+
     }
 
     private SecretKey getSignKey() {
+
+        byte[] keyBytes = Decoders.BASE64.decode(SECRET);
+
         try {
-            // Ensure the secret is correctly base64 encoded.
-            byte[] keyBytes = Decoders.BASE64.decode(secret);
-            System.out.println("Decoded Secret: " + Arrays.toString(keyBytes));  // Optionally, print it to confirm
             return Keys.hmacShaKeyFor(keyBytes);
-        } catch (IllegalArgumentException e) {
-            // Handle case where the key is not a valid Base64 string
-            throw new IllegalArgumentException("The JWT secret is invalid. Ensure it's Base64 encoded properly.");
+        } catch (WeakKeyException e) {
+            SecretKey secretKey = Jwts.SIG.HS256.key().build();
+            System.out.println("secretKey.getAlgorithm() = " + secretKey.getAlgorithm());
+            System.out.println("secretKey.getFormat() = " + secretKey.getFormat());
+            System.out.println("secretKey.getEncoded() = " + Arrays.toString(secretKey.getEncoded()));
+            System.out.println("new String(secretKey.getEncoded()) = " + new String(secretKey.getEncoded()));
+            return secretKey;
         }
     }
 }

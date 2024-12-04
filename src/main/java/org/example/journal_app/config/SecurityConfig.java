@@ -21,7 +21,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
 
-    private final UserDetailsService userDetailsService;
+    private final UserDetailsService userDetailsServiceImpl;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter) throws Exception {
@@ -30,11 +30,16 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
                 .authorizeHttpRequests(
                         req -> req
-                                .requestMatchers("/api/v1/auth/login").permitAll() // This line allows login access
-                                .requestMatchers("/api/**").authenticated()
+                                .requestMatchers("/api/v1/auth/login").permitAll()
+                                .requestMatchers("/api/v1/auth/register").permitAll()
+                                .anyRequest().authenticated()
                 )
+//                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
+
+
         return http.build();
     }
 
@@ -42,7 +47,7 @@ public class SecurityConfig {
     public AuthenticationProvider authProvider() {
         DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
-        daoAuthenticationProvider.setUserDetailsService(userDetailsService);
+        daoAuthenticationProvider.setUserDetailsService(userDetailsServiceImpl);
         return daoAuthenticationProvider;
     }
 

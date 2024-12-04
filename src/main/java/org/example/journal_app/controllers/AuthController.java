@@ -2,11 +2,10 @@ package org.example.journal_app.controllers;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.journal_app.dto.AuthLoginDto;
-import org.example.journal_app.dto.CustomUserDetails;
-import org.example.journal_app.dto.JwtTokenDto;
-import org.example.journal_app.dto.UserDto;
+import org.example.journal_app.dto.*;
 import org.example.journal_app.services.JwtService;
+import org.example.journal_app.services.UserService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -22,17 +21,27 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    private final UserService userService;
 
     @PostMapping("login")
     public JwtTokenDto login(@RequestBody AuthLoginDto loginDto) {
+        // Authenticate the user
         Authentication authenticate = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword())
         );
+        // If authentication is successful, generate JWT token
         if (authenticate.isAuthenticated()) {
             String token = jwtService.GenerateToken(loginDto.getUsername());
-            return new JwtTokenDto(token);
+            return new JwtTokenDto(token);  // Return the token in a JwtTokenDto
         }
+        // If authentication fails, throw an exception
         throw new BadCredentialsException("Invalid username or password");
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<?> registerUser(@RequestBody RegisterRequest registerRequest) {
+        userService.registerUser(registerRequest);
+        return ResponseEntity.ok("User created successfully");
     }
 
     @GetMapping
