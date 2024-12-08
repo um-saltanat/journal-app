@@ -1,4 +1,4 @@
-package org.example.journal_app.dto;
+package org.example.journal_app.dto.auth;
 
 
 import org.example.journal_app.entities.User;

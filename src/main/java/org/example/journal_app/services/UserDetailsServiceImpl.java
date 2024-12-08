@@ -1,7 +1,7 @@
 package org.example.journal_app.services;
 
 import lombok.RequiredArgsConstructor;
-import org.example.journal_app.dto.CustomUserDetails;
+import org.example.journal_app.dto.auth.CustomUserDetails;
 import org.example.journal_app.entities.User;
 import org.example.journal_app.repositories.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;

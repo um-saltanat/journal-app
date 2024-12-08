@@ -3,6 +3,7 @@ package org.example.journal_app.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -30,8 +31,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
                 .authorizeHttpRequests(
                         req -> req
-                                .requestMatchers("/api/v1/auth/login").permitAll()
-                                .requestMatchers("/api/v1/auth/register").permitAll()
+                                .requestMatchers(HttpMethod.POST,"/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/reset_password").permitAll() // Public endpoints                                .requestMatchers("/api/v1/auth/register").permitAll()
+                                .requestMatchers("/posts/**").hasAnyAuthority("USER") // Secure the `/posts` endpoints
                                 .anyRequest().authenticated()
                 )
 //                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

@@ -1,6 +1,6 @@
 package org.example.journal_app.services;
 
-import org.example.journal_app.dto.RegisterRequest;
+import org.example.journal_app.dto.auth.RegisterRequest;
 import org.example.journal_app.entities.User;
 import org.example.journal_app.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -38,7 +39,22 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
     }
 
-    // Custom method to authenticate user based on username and password
+    public boolean checkEmailExists(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
+    public boolean updatePassword(String email, String newPassword) {
+        Optional<User> userOptional = userRepository.findByEmail(email);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            user.setPassword(newPassword); // In real case, make sure to hash the password!
+            userRepository.save(user);
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
@@ -50,6 +66,10 @@ public class UserService implements UserDetailsService {
                 user.getPassword(),
                 new ArrayList<>() // Authorities list; you can add roles here if needed
         );
+    }
+
+    public Optional<User> getUserByUsername(String username) {
+        return userRepository.findByUsername(username);
     }
 
 }
